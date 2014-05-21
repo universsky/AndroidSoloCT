@@ -1,0 +1,132 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>适配测试报告</title>
+    <script src="http://g.tbcdn.cn/kissy/k/1.4.0/seed-min.js"></script>
+<style type="text/css">    
+body {
+ background-color: #EEFFFF;  
+}                              
+p.serif{font-family:"Times New Roman",Georgia,Serif}
+p.sansserif{font-family:Arial,Verdana,Sans-serif} 
+       
+</style>                      
+	
+	
+</head>
+
+<body class="serif">
+    <br><br><br><br>
+	<h1 align="center"style=font-family:微软雅黑>适配测试报告</h1>
+	
+	          <p align="right">
+                <label for="issue_issue_author_id">联系人:陈光剑</label>
+                 <a href="http://www.taobao.com/webww/ww.php?ver=3&amp;touid=universsky1&amp;siteid=cntaobao&amp;status=2&amp;charset=utf-8" class="inline-item" target="_blank" title="universsky1"><img alt="universsky1" border="0" src="http://amos.alicdn.com/realonline.aw?v=2&amp;uid=universsky1&amp;site=cntaobao&amp;s=2&amp;charset=utf-8" /></a><a href="http://amos.alicdn.com/msg.aw?v=2&amp;uid=universsky1&amp;site=cnalichn&amp;s=11&amp;charset=UTF-8" class="inline-item" target="_blank" title="universsky1"></a>
+              </p>
+	
+	<div id=time align="right" style=font-family:Verdana></div>
+    <script>setInterval("time.innerHTML='今天是'+new Date().toLocaleString()+' 星期'+'日一二三四五六'.charAt(new Date().getDay())+' ';",1000);</script>
+	
+	
+<script>
+KISSY.ready(function(S){
+    var path="http://10.125.1.58:88/img/";
+    var href = location.href;
+        /**
+		 * 调用系统默认浏览器打开链接 Apache httpd
+		 * http://127.0.0.1:88/report.html?run_stamp=20140302023811
+		 * &sec=250&min=4
+		 */
+		 
+    var m, run_stamp;
+    m = href.match(/stamp=(\d+)/);
+	if(!m) run_stamp = "20140421122151";
+    else run_stamp = m[1] ;
+     
+ 
+		 
+	var sec ;
+	sec = href.match(/sec=(\d+)/);
+	if(!sec) se = 0;
+	else se=sec[1];
+    
+    
+    var min;
+    min = href.match(/min=(\d+)/);
+	if(!min) mi=0;
+    else mi = min[1];
+	
+    /* 请求报告资源接口,tomcat在8888端口监听 */
+    S.use("node,io", function(S, Node, IO){
+        IO({
+            url: "http://10.125.1.58:8888/Report/go?run_stamp=" + run_stamp,
+            dataType: "jsonp",
+            jsonpCallback: "report",
+            success: function(data) {
+                var report=data;
+				var runtime_log = path + run_stamp + "$runtime.log";
+				var cpu_log     = path + run_stamp + "$cpu_usage.log";
+				
+                var bodyContent="<p><font face=\"verdana\">开始时间:" + run_stamp +"</font></p>";
+                    bodyContent = bodyContent + "<p><font face=\"verdana\">运行时间: " + se + "s ( " + mi + " min ) </font></p>";
+				
+				    bodyContent = bodyContent + "<p align=center ><font face=\"verdana\"><a href=\""+runtime_log+"\">测试运行记录(点击查看)</a></font></p>";
+				    bodyContent = bodyContent + "<p align=center ><font face=\"verdana\"><a href=\""+cpu_log +"\">CPU使用情况(点击查看)</a></font></p>";
+                    bodyContent = bodyContent +  "<hr noshade size=5 align=center width=100% />";
+                     bodyContent = bodyContent +  "<table style=\"table-layout:fixed\" border=\"0\">";
+                /*表格总开始*/
+
+                // 遍历DeviceID
+                for (var i = 0; i < report.result.length; i++) {
+
+                    bodyContent=bodyContent+"<tr><td width=\"80\" scope=\"col\"><font face=\"verdana\" >DeviceId(日志)</font></td>";
+                    for (var j = 0; j < report.result[i].img_timestamp.length; j++) {
+                        
+                        bodyContent = bodyContent+"<td style=\"word-break : break-all\"; \"overflow:hidden\"; width=\"100\" scope=\"col\"><font face=\"verdana\" >"+report.result[i].url[j]+"</font></td>";
+                        
+                    }
+
+                    bodyContent = bodyContent+"</tr>";
+                        /*以上是urls行*/
+
+                       /*这里是log记录*/
+					var log_url = path + run_stamp + "$" + report.result[i].device_id + "$runtime.log";
+                    bodyContent = bodyContent+ "<tr><td scope=\"row\"><font face=\"verdana\" >"+report.result[i].device_id + "</font></td>";
+					//bodyContent = bodyContent+ "<tr><td scope=\"row\"><font face=\"verdana\" ><a href=\""+log_url+"\">"+report.result[i].device_id + "</a></font></td>";
+					 /*下面是imgsrc行*/
+                    for (var j = 0; j < report.result[i].img_timestamp.length; j++) {
+					        var imgsrc_url = path + report.run_stamp+"$"+
+							report.result[i].device_id+"$"+
+							report.result[i].img_timestamp[j]+"$"+
+							report.result[i].img_name[j];
+							
+                            bodyContent = bodyContent+ 
+							"<td><a href=\""+  imgsrc_url +"\"><img src=\"" +imgsrc_url+
+							"\" width=\"200\" height=\"300\"></td>";
+							 
+                    }
+                    bodyContent = bodyContent+"</tr>";  
+                };
+
+
+
+                /********************************************************************************************************************/
+
+                /*总表格结束*/
+
+                bodyContent=bodyContent+"</table>";
+
+                /*输出总的报告*/
+                 
+                    // document.write("<html><head><title>适配测试报告 " + report.run_stamp + "</title></head><body>" + bodyContent);
+                // 　　document.write("</body></html>");
+                S.one("body").append(bodyContent);
+
+            }
+        })
+    });
+});
+</script>
+</body>
+</html>
